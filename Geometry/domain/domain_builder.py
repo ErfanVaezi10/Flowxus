@@ -20,7 +20,7 @@ New keyword arguments (opt-in):
    - provenance: Optional[dict] = None  # override/add provenance fields
 """
 
-from __future__ import division
+
 import logging
 import os
 import hashlib
@@ -156,7 +156,7 @@ class DomainBuilder:
             metadata_json=metadata_json,
         )
 
-        # Write file atomically with explicit encoding
+        # Write file with explicit encoding
         with open(export_path, "w", encoding="utf-8") as f:
             f.write(geo_text)
 
