@@ -4,7 +4,7 @@
 """
 Project: Flowxus
 Author: Erfan Vaezi
-Date: 7/10/2025 (Updated: 8/24/2025)
+Date: 7/10/2025 (Updated: 10/3/2025)
 
 Purpose:
 --------
@@ -22,15 +22,24 @@ Main Tasks:
        - cumulative_arclength(points)
        - signed_area(points) and orientation(points)
        - curvature_polyline(points, window)
-       - le_te_indices(points)
+       - le_te_indices(points_closed)
        - dist_along_curve(points, ref_idx)
 """
 
 import numpy as np
-from typing import Optional, Tuple
+from typing import Callable, Tuple, Optional
 from geometry.topology.indices import le_te_indices as _le_te_topo
 from geometry.topology.loop import signed_area as _signed_area_topo
 from geometry.topology.loop import orientation as _orientation_topo
+
+
+le_te_indices: Callable[[np.ndarray], Tuple[int, int]] = _le_te_topo
+__all__ = [
+    "drop_consecutive_duplicates", "leading_edge", "trailing_edge",
+    "chord_length", "normalize", "ensure_closed", "cumulative_arclength",
+    "signed_area", "orientation", "curvature_polyline", "dist_along_curve",
+    "le_te_indices",
+]
 
 
 def drop_consecutive_duplicates(pts: np.ndarray, tol: float = 0.0) -> np.ndarray:
@@ -105,7 +114,7 @@ def normalize(points: np.ndarray,
               translate_to_le: bool = True,
               scale_to_chord1: bool = True) -> np.ndarray:
     """
-    Normalize a 2D airfoil polyline in place.
+    Normalize a 2D airfoil polyline (returns a new array).
 
     Steps
     -----
@@ -136,6 +145,8 @@ def ensure_closed(points: np.ndarray, tol: float = 1e-9) -> np.ndarray:
 
     Parameters
     ----------
+    points : np.ndarray
+        Polyline vertices of shape (N, 2). Can be open or already closed.
     tol : float
         Absolute tolerance for closure check on x and y.
 
@@ -171,10 +182,10 @@ def _assert_xy(points: Optional[np.ndarray]) -> None:
     if points.ndim != 2 or points.shape[1] != 2:
         raise ValueError("Expected (N,2) float array for points, got shape {}.".format(points.shape))
 
+
 # -----------------
 # New helpers (metrics support)
 # -----------------
-
 def cumulative_arclength(points: np.ndarray) -> np.ndarray:
     """
     Return cumulative arclength along a **closed** or **open** polyline.
@@ -192,18 +203,13 @@ def signed_area(points: np.ndarray) -> float:
     """
     return _signed_area_topo(points)
 
+
 def orientation(points: np.ndarray) -> str:
     """
     Delegates to geometry.topology.loop.orientation.
     """
     return _orientation_topo(points)
 
-
-def le_te_indices(points_closed: np.ndarray) -> Tuple[int, int]:
-    """
-    Delegates to geometry.topology.loop.le_te_indices.
-    """
-    return _le_te_topo(points_closed)
 
 def _central_tangent_closed(points_closed: np.ndarray) -> np.ndarray:
     """
