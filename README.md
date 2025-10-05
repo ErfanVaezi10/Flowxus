@@ -29,14 +29,6 @@
 
 > Note: Post-processing currently **reads SU2 `.dat`/`.csv` history**; surface/volume fields are out of scope in v0.0.2.
 
----
-
-## Limitations (be honest)
-
-- 2D workflows emphasized; 3D is not the focus of v0.0.x.
-- SU2 **not bundled**; you must install it separately.
-- External tools (SU2, Gmsh, MPI) are out of scope for support/security.
-- Minimal plots/UI by design — this is a scriptable, headless workflow.
 
 ---
 
