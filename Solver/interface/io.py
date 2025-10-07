@@ -24,9 +24,8 @@ Main Tasks
 Notes
 -----
 - Intended for 2D workflows; 3D volume elements are discarded.
-- `id_map` is taken from Gmsh `field_data` (Physical groups). If the input mesh
-  lacks Physical names, the map will be empty and SU2 BC assignment should rely
-  on other conventions.
+- `id_map` is taken from Gmsh `field_data`. If the input mesh lacks Physical names, 
+  the map will be empty and SU2 BC assignment should rely on other conventions.
 - Requires `meshio` (and implicitly `numpy`). Errors are surfaced with actionable messages.
 """
 
@@ -37,13 +36,6 @@ import warnings
 def msh_to_su2(msh_path, su2_path):
     """
     Convert a Gmsh mesh (.msh v2/v4; ASCII or binary) to an SU2 mesh (.su2), enforcing 2D.
-
-    This routine:
-      - Loads the input with `meshio.read`.
-      - Warns if the geometry is not exactly planar in Z, then truncates coordinates to (x, y).
-      - Filters cells to 2D-relevant types: line, triangle, quad (a.k.a. quadrilateral).
-      - Extracts a PhysicalName→ID mapping from `mesh.field_data` when present.
-      - Writes the result as `.su2` and verifies the output file.
 
     Args
     ----
