@@ -18,6 +18,11 @@ Modules:
            preserving boundary tags, and validating output integrity.
 """
 
-__all__ = ["history", "formats", "io"]
+from .history import read_history, read_last_n, last_row, tail_follow
+from .formats import open_text, sniff_delim
+from .io import msh_to_su2
+
+__all__ = ["read_history","read_last_n","last_row","tail_follow",
+           "open_text","sniff_delim","msh_to_su2"]
 
 
