@@ -4,7 +4,7 @@
 """
 Project: Flowxus
 Author: Erfan Vaezi
-Date: 10/2/2025
+Date: 8/21/2025 (Updated: 10/9/2025)
 
 Purpose
 -------
@@ -27,12 +27,14 @@ Notes
 - Keyword overrides: marker_map, marker_euler, marker_far, bc_params, id_map.
 """
 
+# -*- coding: utf-8 -*-
 from __future__ import absolute_import
 import os
 import tempfile
 import io
 from pathlib import Path
-from typing import Dict, Mapping, Any, Optional
+from typing import Dict, Mapping, Any, Optional, Iterable  # ← add Iterable
+
 from .markers import fmt_tuple, apply_marker_map, apply_bc_params
 from .schema import normalize_keys, validate
 from .validate import cross_validate
@@ -53,10 +55,9 @@ _DEFAULTS_SECTIONS = [
         "AOA": 0.0,
         "FREESTREAM_TEMPERATURE": 300.0,
         "FREESTREAM_PRESSURE": 101325.0,
-        # If you pass density/velocity/viscosity later, you can override here via params.
     }),
     ("TURBULENCE", {
-        "KIND_TURB_MODEL": "SST",
+        "KIND_TURB_MODEL": "SST",     # SST-only policy
         "REYNOLDS_NUMBER": 1.0e6,
         "REYNOLDS_LENGTH": 1.0,
     }),
@@ -80,7 +81,7 @@ _DEFAULTS_SECTIONS = [
         "OUTPUT_WRT_FREQ": 200,
         "VOLUME_OUTPUT": "SOLUTION, PRIMITIVE",
         "SCREEN_OUTPUT": "INNER_ITER, RMS_DENSITY, RMS_MOMENTUM-X, RMS_MOMENTUM-Y, RMS_ENERGY",
-        "HISTORY_OUTPUT": "INNER_ITER, RMS_DENSITY, RMS_MOMENTUM-X, RMS_MOMENTUM-Y, RMS_ENERGY, DRAG, LIFT",
+        "HISTORY_OUTPUT": "INNER_ITER, RMS_DENSITY, RMS_MOMENTUM-X, RMS_MOMENTUM-Y, RMS_ENERGY",
         "HISTORY_WRT_FREQ_INNER": 1,
         "SCREEN_WRT_FREQ_INNER": 1,
     }),
@@ -148,6 +149,31 @@ def build_cfg(params,  # type: Optional[Mapping[str, Any]]
 
     # Expert BC overrides
     apply_bc_params(cfg, bc_params)
+
+    # ---- Ensure history/screen outputs include residuals we need for plotting ----
+    def _append_list_key(dct, key, items):
+        # type: (Dict[str, Any], str, Iterable[str]) -> None
+        cur = [s.strip() for s in str(dct.get(key, "")).split(",") if s and s.strip()]
+        for it in items:
+            if it not in cur:
+                cur.append(it)
+        if cur:
+            dct[key] = ", ".join(cur)
+
+    # Core NS residuals (some users override HISTORY_OUTPUT; make sure these exist)
+    _append_list_key(cfg, "HISTORY_OUTPUT",
+                     ["INNER_ITER", "RMS_DENSITY", "RMS_MOMENTUM-X", "RMS_MOMENTUM-Y", "RMS_ENERGY"])
+
+    # Turbulence residuals (SST-only policy)
+    # Turbulence residuals (SST-only policy)
+    turb = str(cfg.get("KIND_TURB_MODEL", "")).upper()
+    if turb == "SST":
+        sst_candidates = [
+            "RMS_TKE",
+            "RMS_DISSIPATION",
+        ]
+        _append_list_key(cfg, "HISTORY_OUTPUT", sst_candidates)
+        _append_list_key(cfg, "SCREEN_OUTPUT", sst_candidates)
 
     # Final cross-key validation (logical consistency)
     cross_validate(cfg)
