@@ -4,7 +4,7 @@
 """
 Project: Flowxus
 Author: Erfan Vaezi
-Date: 7/12/2025 (Updated: 8/24/2025)
+Date: 7/12/2025 (Updated: 10/10/2025)
 
 Purpose
 -------
@@ -20,19 +20,19 @@ New keyword arguments (opt-in):
    - provenance: Optional[dict] = None  # override/add provenance fields
 """
 
-
 import logging
 import os
 import hashlib
 from datetime import datetime
 from typing import Dict, Optional, List, cast
-from geometry.geo.geo_writer import emit_geometry_only_geo
-from geometry.domain.domain_math import (
+from ..geo.geo_writer import emit_geometry_only_geo
+from .domain_math import (
     validate_box_dims,
     leading_edge_from_points,
     compute_box_bounds,
     default_physical_tags,
 )
+
 from geometry.metrics import (
     compute_descriptors,
     compute_per_vertex_scalars,
@@ -167,7 +167,6 @@ class DomainBuilder:
 # -----------------
 # helpers (private)
 # -----------------
-
 def _sha256_or_none(path: Optional[str]) -> Optional[str]:
     try:
         if not path or not os.path.exists(path):
