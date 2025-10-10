@@ -1,21 +1,28 @@
 # -*- coding: utf-8 -*-
 # Flowxus/geometry/api.py
+
 """
-A thin, import-only facade for Flowxus geometry.
+Project: Flowxus
+Author: Erfan Vaezi
+Date: 7/15/2025 (Updated: 10/10/2025)
 
-Typical usage in main.py:
-    from geometry.api import load_and_normalize, build_farfield_domain, write_geo_and_csv
+Purpose
+-------
+Thin, import-only façade for Flowxus geometry workflows. Exposes three high-level
+helpers to (1) load and normalize an airfoil polyline, (2) construct a far-field
+domain around it, and (3) emit a geometry-only `.geo` plus optional CSV/metadata.
 
-    geo = load_and_normalize("naca0010.dat", translate_to_le=True, scale_to_chord1=True)
-    domain = build_farfield_domain(geo, {"up":5.0, "down":5.0, "front":5.0, "back":10.0})
-    write_geo_and_csv(
-        domain,
-        export_path="domain.geo",
-        emit_metadata=True,
-        emit_scalars_csv=True,
-        scalars_path="airfoil_scalars.csv",
-        provenance={"version": "0.4.0"},
-    )
+Main Tasks
+----------
+    1. `load_and_normalize` → parse points, close/CCW, translate to LE, scale to chord=1.
+    2. `build_farfield_domain` → create rectangular far-field box from chord-based extents.
+    3. `write_geo_and_csv` → write `.geo` and optional per-vertex CSV + JSON metadata header.
+
+Notes
+-----
+- This module is a convenience façade; detailed behavior lives in `geo_loader` and
+  `domain_builder`. All dimensions in `box_dims` are assumed in *chord units* if you
+  normalized the geometry (recommended).
 """
 
 from typing import Dict, Optional
@@ -40,8 +47,24 @@ def load_and_normalize(
     scale_to_chord1: bool = True,
 ) -> GeometryLoader:
     """
-    Load geometry and (optionally) normalize in place.
-    Returns the GeometryLoader instance (closed + CCW after load()).
+    Load an airfoil polyline and optionally normalize in place.
+
+    After `load()`, the geometry is closed and oriented CCW. Normalization translates
+    the LE to (0, 0) and scales the chord to 1.0 if requested.
+
+    Args
+    ----
+    filename : str
+        Path to the geometry file (e.g., .dat, .txt).
+    translate_to_le : bool, optional
+        Move geometry so the leading edge is at the origin (default: True).
+    scale_to_chord1 : bool, optional
+        Scale geometry so the chord length equals 1.0 (default: True).
+
+    Returns
+    -------
+    GeometryLoader
+        Loader instance with in-memory geometry ready for domain building.
     """
     geo = GeometryLoader(filename)
     geo.load()
@@ -54,8 +77,22 @@ def build_farfield_domain(
     box_dims: Dict[str, float],
 ) -> DomainBuilder:
     """
-    Build a rectangular far-field domain around the already-loaded airfoil.
-    `box_dims` uses keys: {"up","down","front","back"} in *chord* units if you normalized.
+    Construct a rectangular far-field domain around the loaded airfoil.
+
+    `box_dims` keys: {"up", "down", "front", "back"} measured in chord units
+    if the input was normalized (recommended).
+
+    Args
+    ----
+    geo : GeometryLoader
+        Loaded/normalized geometry.
+    box_dims : Dict[str, float]
+        Extents of the far-field box in chord units.
+
+    Returns
+    -------
+    DomainBuilder
+        Configured domain builder capable of writing `.geo`.
     """
     return DomainBuilder(geo, box_dims)
 
@@ -70,8 +107,27 @@ def write_geo_and_csv(
     provenance: Optional[Dict[str, object]] = None,
 ) -> str:
     """
-    Emit the geometry-only .geo file and (optionally) per-vertex CSV + embedded JSON metadata.
-    Returns the written .geo path.
+    Emit the geometry-only `.geo` file and optional per-vertex CSV + embedded JSON metadata.
+
+    Args
+    ----
+    domain : DomainBuilder
+        Domain builder returned by `build_farfield_domain`.
+    export_path : str, optional
+        Output path for the `.geo` file (default: "domain.geo").
+    emit_metadata : bool, optional
+        Insert a commented JSON header (provenance/metadata) in the `.geo` (default: True).
+    emit_scalars_csv : bool, optional
+        Also write a sidecar CSV with per-vertex scalars (default: True).
+    scalars_path : str, optional
+        Path for the scalars CSV (default: "airfoil_scalars.csv").
+    provenance : Optional[Dict[str, object]], optional
+        Additional provenance fields to embed in the `.geo` metadata.
+
+    Returns
+    -------
+    str
+        Path to the written `.geo` file.
     """
     return domain.generate_geo_file(
         export_path=export_path,
