@@ -25,9 +25,8 @@ from __future__ import division
 from typing import List, Tuple
 import math
 import numpy as np
-from geometry.topology.indices import le_te_indices as _le_te_topo
-from geometry.topology.split import split_sides as _split_sides_topo
-
+from ..topology.indices import le_te_indices as _le_te_topo
+from ..topology.split import split_sides as _split_sides_topo
 
 # ---------- guards / basics ----------
 
