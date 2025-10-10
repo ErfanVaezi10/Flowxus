@@ -30,6 +30,7 @@ Notes:
 
 from typing import List, Sequence, Tuple
 import numpy as np
+
 try:
     import gmsh  # type: ignore
 except Exception as _e:  # pragma: no cover
