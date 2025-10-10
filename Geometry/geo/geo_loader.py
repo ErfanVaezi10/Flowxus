@@ -4,7 +4,7 @@
 """
 Project: Flowxus
 Author: Erfan Vaezi
-Date: 7/9/2025 (Updated: 9/6/2025)
+Date: 7/9/2025 (Updated: 10/10/2025)
 
 Purpose:
 --------
@@ -21,11 +21,11 @@ import os
 import logging
 from typing import Optional
 import numpy as np
-from geometry.loaders.dat_loader import load_dat
-from geometry.loaders.step_loader import load_step
-from geometry.loaders.iges_loader import load_iges
-from geometry.topology.loop import ensure_closed as topo_ensure_closed, sort_loop_ccw
-from geometry.ops import (
+from ..loaders.dat_loader import load_dat
+from ..loaders.step_loader import load_step
+from ..loaders.iges_loader import load_iges
+from ..topology.loop import ensure_closed as topo_ensure_closed, sort_loop_ccw
+from ..ops import (
     drop_consecutive_duplicates,
     leading_edge as _le,
     trailing_edge as _te,
