@@ -11,21 +11,18 @@ End-to-end driver:
   6) Mesh QA summary + a few stats plots
 """
 
-import os
-import logging
-import json
-import sys
-
+import os, logging, json, sys
 from pathlib import Path
-from geometry.geo.geo_loader import GeometryLoader
-from geometry.domain.domain_builder import DomainBuilder
-from post.plot_geo import plot_domain
-from post.plot_mesh import plot_msh_2d_nodes, plot_msh_2d_elements
+
+
+from geometry.api import load_and_normalize, build_farfield_domain, write_geo_and_csv
 from mesh.stats.export import write_summary_csv, write_summary_json, write_summary_excel
 from mesh.api import build_mesh
 from mesh.stats.report import summarize
 from mesh.checks import run_checks
 from solver.api import prepare_case, run_case, post_case
+from post.plot_geo import plot_domain
+from post.plot_mesh import plot_msh_2d_nodes, plot_msh_2d_elements
 from post.plot_stats import (
     plot_element_type_distribution,
     plot_node_valence_hist,
@@ -48,45 +45,39 @@ if __name__ == "__main__":
     os.makedirs("plots", exist_ok=True)
 
     # ------------------------------------------------------------------
-    # 1) Load & normalize geometry
+    # 1) Load, normalize, plot, and emit geometry (keep a DomainBuilder for mesh)
     # ------------------------------------------------------------------
-    geo = GeometryLoader("naca0010.dat")
-    geo.load()
-    geo.normalize(translate_to_le=True, scale_to_chord1=True)
-    geo.plot(show=True, save_path="airfoil.png")
+    os.makedirs("plots", exist_ok=True)
 
-    # ------------------------------------------------------------------
-    # 2) Build rectangular farfield domain (+ preview)
-    #    box_dims: distances from the leading edge-based ref box
-    # ------------------------------------------------------------------
+    airfoil = "naca0010.dat"
     box_dims = {"up": 5.0, "down": 5.0, "front": 5.0, "back": 10.0}
-    domain = DomainBuilder(geo, box_dims)
-
+    geo = load_and_normalize(airfoil, translate_to_le=True, scale_to_chord1=True)
+    geo.plot(show=True, save_path="plots/airfoil.png")
+    domain = build_farfield_domain(geo, box_dims)
     plot_domain(
         airfoil_pts=geo.get_closed_points(),
         bbox=domain.bounding_box,
         physical_tags=domain.physical_tags,
         show=True,
-        save_path="domain.png",
+        save_path="plots/domain.png",
     )
 
-    # ------------------------------------------------------------------
-    # 3) Emit geometry-only .geo and airfoil CSV metadata
-    #    (useful for provenance and third-party tools)
-    # ------------------------------------------------------------------
+    # Emit artifacts
     out_geo = "domain.geo"
     out_csv = "airfoil_scalars.csv"
-    domain.generate_geo_file(
+    write_geo_and_csv(
+        domain,
         export_path=out_geo,
         emit_metadata=True,
         emit_scalars_csv=True,
         scalars_path=out_csv,
         provenance={"version": "0.4.0"},
     )
-    log.info("Artifacts written: %s, %s (and airfoil.png/domain.png if plotting enabled)", out_geo, out_csv)
+
+    log.info("Artifacts written: %s, %s", out_geo, out_csv)
 
     # ------------------------------------------------------------------
-    # 4) Mesh with Gmsh via Flowxus mesh API
+    # 2) Mesh with Gmsh via Flowxus mesh API
     #    - Set n_layers > 0 to activate BL layers around the airfoil.
     #    - 'airfoil' size controls near-wall size via the distance threshold field.
     # ------------------------------------------------------------------
@@ -126,7 +117,7 @@ if __name__ == "__main__":
     log.info("Mesh written to: %s", msh_out)
 
     # ------------------------------------------------------------------
-    # 5) Quick mesh plots (optional)
+    # 3) Quick mesh plots (optional)
     # ------------------------------------------------------------------
     try:
         plot_msh_2d_nodes(msh_out, show=True, save_path="mesh_nodes.png")
@@ -135,7 +126,7 @@ if __name__ == "__main__":
         log.warning("Skipping quick mesh plots: %s", e)
 
     # ------------------------------------------------------------------
-    # 6) Mesh QA summary + selected plots from stats package
+    # 4) Mesh QA summary + selected plots from stats package
     # ------------------------------------------------------------------
     summary = summarize(msh_out, wall_name="airfoil", include_bl=True)
     log.info("Mesh summary:\n%s", summary)
@@ -191,7 +182,7 @@ if __name__ == "__main__":
     print(f"✅ Mesh checks passed. Report: {report_path}")
 
     # ------------------------------------------------------------------
-    # 7) SU2: prepare, run, post-process
+    # 5) SU2: prepare, run, post-process
     # ------------------------------------------------------------------
     su2_params = {
         "MACH_NUMBER": 0.2,
