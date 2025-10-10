@@ -4,7 +4,7 @@
 """
 Project: Flowxus
 Author: Erfan Vaezi
-Date: 7/16/2025 (Updated: 8/22/2025)
+Date: 7/16/2025 (Updated: 10/10/2025)
 
 Modules:
 --------
@@ -15,5 +15,8 @@ Modules:
                     1. Validating user-provided domain extents,
                     2. Computing bounding box coordinates from the leading edge.
 """
+
+from . import domain_builder as domain_builder
+from . import domain_math as domain_math
 
 __all__ = ["domain_builder", "domain_math"]
