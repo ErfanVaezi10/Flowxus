@@ -23,42 +23,8 @@ Notes:
 """
 
 from __future__ import division
-from typing import Optional
 import numpy as np
-
-
-# -----------------------
-# Guards & small helpers
-# -----------------------
-def _assert_xy(points: Optional[np.ndarray]) -> None:
-    """
-    Validate that `points` is an (N, 2) float-like array.
-
-    Notes
-    -----
-    - We intentionally do not copy/convert dtype here; callers decide precision.
-    - Consider enabling the (commented) finite-check if CAD ingestion can produce NaN/Inf.
-    """
-    if points is None:
-        raise ValueError("No geometry provided (points is None).")
-    if points.ndim != 2 or points.shape[1] != 2:
-        raise ValueError("Expected shape (N, 2), got {}.".format(points.shape))
-    # Optional robustness (enable if you see noisy inputs):
-    # if not np.isfinite(points).all():
-    #     raise ValueError("Non-finite coordinates detected (NaN/Inf) in points.")
-
-
-def _is_exactly_closed(points: np.ndarray, tol: float) -> bool:
-    """
-    Return True if first and last vertices are equal within `tol` (component-wise).
-
-    Implementation detail
-    ---------------------
-    - Uses rtol=0 to avoid scale-dependent acceptance; closure is purely absolute atol-based.
-    """
-    if points.shape[0] < 2:
-        return False
-    return np.allclose(points[0], points[-1], atol=tol, rtol=0.0)
+from ._validation import _assert_xy, _is_exactly_closed
 
 
 # -----------------------
@@ -214,7 +180,7 @@ def sort_loop_ccw(points_closed: np.ndarray,
 
     # Reverse order *excluding* the duplicate last point (if present), then re-close.
     # This preserves vertex order deterministically (no angular re-sorting).
-    if _is_exactly_closed(P, tol_close):
+    if _is_exactly_closed(P, tol_close):  # Now from validation module
         core = P[:-1][::-1]
     else:
         core = P[::-1]
@@ -262,7 +228,7 @@ def close_and_orient(points: np.ndarray,
     if cur == desired:
         return P
     # flip orientation deterministically (exclude duplicate last row if present), then re-close
-    if _is_exactly_closed(P, tol_close):
+    if _is_exactly_closed(P, tol_close):  # Now from validation module
         core = P[:-1][::-1]
     else:
         core = P[::-1]
