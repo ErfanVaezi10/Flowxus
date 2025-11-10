@@ -24,26 +24,11 @@ Important precondition:
      (LE→TE along +x). If callers may pass rotated shapes, normalize/align earlier.
 """
 
+
 from __future__ import division
 from typing import Tuple
 import numpy as np
-
-
-def _assert_xy(points: np.ndarray) -> None:
-    """
-    Basic shape check; keep local to avoid cross-package coupling.
-    """
-    if points is None or points.ndim != 2 or points.shape[1] != 2:
-        raise ValueError("Expected (N,2) float array for points.")
-    # Optional robustness: enable if upstream can produce NaN/Inf.
-    if not np.isfinite(points).all():
-        raise ValueError("Non-finite coordinates (NaN/Inf) detected.")
-
-
-def _require_closed(points: np.ndarray, tol: float = 1e-12) -> None:
-    """Require first==last (within tol). Use rtol=0 to avoid scale effects."""
-    if points.shape[0] < 2 or not np.allclose(points[0], points[-1], atol=tol, rtol=0.0):
-        raise ValueError("Expected a CLOSED polyline (first==last within tolerance).")
+from ._validation import _assert_xy, _require_closed
 
 
 def _arg_extreme_with_ties(x: np.ndarray, y: np.ndarray, *, mode: str, tol: float) -> int:
