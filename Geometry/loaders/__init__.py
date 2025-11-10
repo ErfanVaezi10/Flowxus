@@ -6,6 +6,10 @@ Project: Flowxus
 Author: Erfan Vaezi
 Date: 6/14/2025 (Updated: 7/22/2025)
 
+Loaders Subpackage:
+-------------------
+File format-specific loaders for importing airfoil geometry data.
+
 Modules:
 --------
 - dat_loader:  Robust parser for `.dat` airfoil files (handles headers, comments, and commas/whitespace).
@@ -16,12 +20,12 @@ Modules:
 
 Assumptions & Notes:
 --------------------
-- IGES and STEP loaders sample curves into (x, y) point arrays.
-- Users should go through `GeometryLoader`, which provides a unified API and integrates these loaders.
-- Units: whatever the file provides; no rescaling is applied.
-- Planarity: IGES/STEP samplers drop z; non-planar inputs are unsupported.
-- Columns: Only the first two numeric tokens per line are used as (x, y).
-- No reordering/stitching of multiple curves is performed here (see upstream).
+- IGES and STEP loaders sample curves into (x, y) point arrays
+- Primary interface: `GeometryLoader` provides unified API across all formats
+- Units: Native file units preserved; no automatic rescaling
+- Planarity: IGES/STEP loaders assume planar geometry (z-coordinate dropped)
+- Data extraction: Only first two numeric columns used as (x, y) coordinates
+- Topology: No automatic curve reordering or stitching performed
 
 """
 
