@@ -28,8 +28,9 @@ Notes:
    - Requires: `gmsh` (Python API) and `numpy`.
 """
 
-from typing import List, Sequence, Tuple
+from typing import List
 import numpy as np
+from ._helpers import _unique_entities, _eval_curve
 
 try:
     import gmsh  # type: ignore
@@ -105,7 +106,6 @@ def load_iges(
             if dim != 1:
                 continue
 
-
             # Parametric domain of curve (robust to gmsh version/stub differences)
             rng = None
 
@@ -175,30 +175,3 @@ def load_iges(
             except Exception:
                 pass
 
-
-# -----------------
-# helpers (private)
-# -----------------
-def _unique_entities(entities: Sequence[Tuple[int, int]]) -> List[Tuple[int, int]]:
-    """Return entities with duplicates removed, preserving order."""
-    seen = set()
-    out: List[Tuple[int, int]] = []
-    for ent in entities:
-        if ent not in seen:
-            seen.add(ent)
-            out.append(ent)
-    return out
-
-
-def _eval_curve(dim: int, tag: int, ts: np.ndarray) -> np.ndarray:
-    """
-    Evaluate a curve at parameter values `ts` using Gmsh’s model evaluator.
-
-    Returns
-    -------
-    np.ndarray
-        (M, 3) array of xyz points.
-    """
-    xyz_list = gmsh.model.getValue(dim, tag, ts.tolist())  # flat [x1,y1,z1,...]
-    xyz = np.array(xyz_list, dtype=float).reshape(-1, 3)
-    return xyz
