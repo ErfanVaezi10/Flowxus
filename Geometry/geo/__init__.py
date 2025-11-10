@@ -15,8 +15,10 @@ Modules:
 - geo_loader: High-level interface for loading airfoil geometries from supported formats.
               Provides normalization, chord/LE/TE utilities, and plotting.
 
+- dispatcher: File format routing and loader function dispatching.
+
 - geo_writer: Generates Gmsh .geo files from geometry and domain specifications.
               Encapsulates .geo syntax for points, splines, loops, surfaces, and physical groups.
 """
 
-__all__ = ["geo_writer", "geo_loader"]
+__all__ = ["geo_writer", "geo_loader", "dispatcher"]
