@@ -28,8 +28,9 @@ Notes:
    - Requires: `gmsh` (Python API) and `numpy`.
 """
 
-from typing import List, Sequence, Tuple
+from typing import List
 import numpy as np
+from ._helpers import _unique_entities, _eval_curve
 
 try:
     import gmsh  # type: ignore
@@ -84,7 +85,6 @@ def load_step(
         gmsh.model.add("flowxus_step_loader")
 
         # OCC import handles STEP/IGES
-        # Note: importShapes returns tags; we don’t need them explicitly here.
         gmsh.model.occ.importShapes(filename)
         gmsh.model.occ.synchronize()
 
@@ -183,34 +183,3 @@ def load_step(
                 gmsh.finalize()
             except Exception:
                 pass
-
-
-# -----------------
-# helpers (private)
-# -----------------
-def _unique_entities(entities: Sequence[Tuple[int, int]]) -> List[Tuple[int, int]]:
-    """Return entities with duplicates removed, preserving order."""
-    seen = set()
-    out: List[Tuple[int, int]] = []
-    for ent in entities:
-        if ent not in seen:
-            seen.add(ent)
-            out.append(ent)
-    return out
-
-
-def _eval_curve(dim: int, tag: int, ts: np.ndarray) -> np.ndarray:
-    """
-    Evaluate a curve at parameter values `ts` using Gmsh’s model evaluator.
-
-    Returns
-    -------
-    np.ndarray
-        (M, 3) array of xyz points.
-    """
-    # gmsh.model.getValue(dim, tag, [u, v]) expects:
-    # - for curves: [t], for surfaces: [u, v]
-    # Vectorized evaluation: pass a flat list of parameters and reshape.
-    xyz_list = gmsh.model.getValue(dim, tag, ts.tolist())  # returns flat list [x1,y1,z1,x2,y2,z2,...]
-    xyz = np.array(xyz_list, dtype=float).reshape(-1, 3)
-    return xyz
