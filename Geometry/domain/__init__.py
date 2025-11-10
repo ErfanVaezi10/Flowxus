@@ -6,8 +6,8 @@ Project: Flowxus
 Author: Erfan Vaezi
 Date: 7/16/2025 (Updated: 10/10/2025)
 
-Domain Module:
---------------
+Domain Subpackage:
+------------------
 Provides tools for building rectangular far-field domains around airfoil geometries.
 
 Modules:
