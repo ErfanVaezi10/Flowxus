@@ -34,12 +34,14 @@ def emit_geometry_only_geo(
     metadata_json: Optional[str] = None,
 ) -> str:
     """
-    Emit a `.geo` text block with:
-      - Optional commented JSON metadata header (if `metadata_json` provided)
-      - Airfoil spline (topologically closed on the same point ID)
-      - Rectangular farfield box
-      - Boolean subtraction (box minus airfoil)
-      - Physical groups
+    Generate Gmsh .geo script text for geometry definition.
+
+    Produces a complete geometry specification including:
+    - Optional JSON metadata header (commented)
+    - Airfoil spline with topological closure
+    - Rectangular far-field domain
+    - Boolean operations for fluid domain
+    - Physical group assignments
 
     Parameters
     ----------
@@ -98,9 +100,6 @@ def emit_geometry_only_geo(
     W("Line(1004) = {1004, 1001};\n")  # inlet
 
     W("Curve Loop(100) = {1001, 1002, 1003, 1004};\n")
-
-    # Optional: merge coincident entities if any (belt-and-suspenders)
-    # W("Coherence;\n")
 
     # Boolean subtraction: farfield box minus airfoil curve loop
     W("Plane Surface(100) = {100, 1}; // box minus airfoil\n\n")
