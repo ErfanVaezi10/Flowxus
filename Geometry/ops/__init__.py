@@ -6,27 +6,19 @@ Project: Flowxus
 Author: Erfan Vaezi
 Date: 10/10/2025
 
-Purpose
--------
-Lightweight 2D geometry utilities for airfoil-like curves. This package keeps the
-**public import path stable** for callers that previously did:
+Ops Subfolder:
+--------------
+Lightweight 2D geometry utilities for airfoil curve processing. Maintains stable import
+paths for downstream modules while organizing functionality into logical submodules.
 
-    from geometry.ops import <name>
-
-so switching from a single-module layout (ops.py) to a package (ops/) requires
-no changes in downstream code.
 
 Contents
 --------
-- ops.basic:
-    * drop_consecutive_duplicates
-    * leading_edge, trailing_edge, chord_length
-    * normalize
-    * cumulative_arclength
+- basic:    Foundational geometry operations including duplicate removal,
+            feature detection, normalization, and arclength computation
 
-- ops.analysis:
-    * curvature_polyline
-    * dist_along_curve
+- analysis: Advanced geometric analysis with curvature estimation and
+            distance calculations along curves
 
 - Re-exports from topology (single source of truth):
     * ensure_closed, signed_area, orientation  (geometry.topology.loop)
@@ -34,25 +26,15 @@ Contents
 
 Public API
 ----------
-The names exported here are the stable surface used by higher-level modules
-(GeometryLoader, DomainBuilder, metrics). Anything not listed in __all__ is
-considered internal.
+Exported functions form the stable interface used by GeometryLoader, DomainBuilder,
+and metrics modules. Internal implementations may change without breaking callers.
 """
 
 from .basic import (
-    drop_consecutive_duplicates,
-    leading_edge,
-    trailing_edge,
-    chord_length,
-    normalize,
-    cumulative_arclength,
+    drop_consecutive_duplicates, leading_edge, chord_length,
+    trailing_edge, normalize, cumulative_arclength,
 )
-from .analysis import (
-    curvature_polyline,
-    dist_along_curve,
-)
-
-# Single-source these from topology to avoid duplication
+from .analysis import curvature_polyline, dist_along_curve
 from ..topology.loop import signed_area, orientation, ensure_closed
 from ..topology.indices import le_te_indices
 
