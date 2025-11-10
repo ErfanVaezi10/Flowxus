@@ -4,7 +4,7 @@
 """
 Project: Flowxus
 Author: Erfan Vaezi
-Date: 8/29/2025 (Updated: 9/5/2025)
+Date: 8/29/2025 (Updated: 11/10/2025)
 
 Topology Subfolder:
 -------------------
@@ -13,11 +13,17 @@ feature detection, and boundary segmentation.
 
 Modules:
 --------
-- loop:    Closure predicates, signed area, orientation, CCW enforcement.
+- loop:        Closure predicates and enforcement, signed area calculation,
+               orientation detection (CW/CCW), and CCW canonicalization.
 
-- indices: Deterministic LE/TE index detection with tie-breaking.
+- indices:     Deterministic LE/TE index detection with explicit tie-breaking,
+               chord alignment validation, and degenerate geometry handling.
 
-- split:   Partition loop into suction/pressure sides; rotation-stable labeling.
+- split:       Partition closed loops into pressure/suction sides with rotation-
+               stable labeling, path extraction, and range conversion utilities.
+
+- _validation: Shared validation utilities for geometry quality checking including
+               array structure validation, closure verification, and finite values.
 """
 
 __all__ = ["indices", "loop", "split"]
