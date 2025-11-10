@@ -4,13 +4,19 @@
 """
 Project: Flowxus
 Author: Erfan Vaezi
-Date: 7/9/2025 (Updated: 10/10/2025)
+Date: 7/9/2025 (Updated: 9/6/2025)
 
 Purpose:
 --------
 Dependency-light loader that reads 2D airfoil/curve geometry from supported formats
 (.dat, .stp/.step, .igs/.iges), validates/sanitizes points, and exposes convenience
 utilities (LE/TE, chord length, normalization, plotting).
+
+Key Features:
+-------------
+   - Multi-format support (.dat, .stp/.step, .igs/.iges)
+   - Automatic validation and sanitization of geometry data
+   - Geometry utilities: normalization, chord/LE/TE calculations, plotting
 
 Pipeline:
 ---------
@@ -27,10 +33,8 @@ from ..loaders.iges_loader import load_iges
 from ..topology.loop import ensure_closed as topo_ensure_closed, sort_loop_ccw
 from ..ops import (
     drop_consecutive_duplicates,
-    leading_edge as _le,
-    trailing_edge as _te,
-    chord_length as _chord_len,
-    normalize as _normalize,
+    leading_edge as _le, trailing_edge as _te,
+    chord_length as _chord_len, normalize as _normalize,
 )
 
 logger = logging.getLogger(__name__)
@@ -143,7 +147,8 @@ class GeometryLoader:
         """
         if self.points is None:
             raise ValueError("[GeometryLoader] No geometry loaded. Call `.load()` first.")
-        from post.plot_geo import plot_points
+        from post.geometry.plot_geo import plot_points
+        os.makedirs(os.path.dirname(save_path) or ".", exist_ok=True)
         plot_points(self.points, name=self.name, show=show, save_path=save_path, ax=ax)
         if save_path:
             logger.info("[GeometryLoader] Plot saved to: %s", save_path)
