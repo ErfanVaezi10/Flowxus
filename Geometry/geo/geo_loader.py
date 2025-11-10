@@ -4,22 +4,16 @@
 """
 Project: Flowxus
 Author: Erfan Vaezi
-Date: 7/9/2025 (Updated: 9/6/2025)
-
-Purpose:
---------
-Dependency-light loader that reads 2D airfoil/curve geometry from supported formats
-(.dat, .stp/.step, .igs/.iges), validates/sanitizes points, and exposes convenience
-utilities (LE/TE, chord length, normalization, plotting).
+Date: 7/9/2025 (Updated: 11/10/2025)
 
 Key Features:
 -------------
-   - Multi-format support (.dat, .stp/.step, .igs/.iges)
-   - Automatic validation and sanitization of geometry data
-   - Geometry utilities: normalization, chord/LE/TE calculations, plotting
+- Multi-format support (.dat, .stp/.step, .igs/.iges)
+- Automatic validation and sanitization of geometry data
+- Geometry utilities: normalization, chord/LE/TE calculations
 
-Pipeline:
----------
+Processing Pipeline:
+--------------------
 load() → ndarray(float64, shape=(N,2)) → drop consecutive duplicates → ensure CLOSED → enforce CCW
 """
 
@@ -27,14 +21,11 @@ import os
 import logging
 from typing import Optional
 import numpy as np
-from ..loaders.dat_loader import load_dat
-from ..loaders.step_loader import load_step
-from ..loaders.iges_loader import load_iges
+from .dispatcher import get_loader_function
 from ..topology.loop import ensure_closed as topo_ensure_closed, sort_loop_ccw
 from ..ops import (
-    drop_consecutive_duplicates,
-    leading_edge as _le, trailing_edge as _te,
-    chord_length as _chord_len, normalize as _normalize,
+    drop_consecutive_duplicates, leading_edge as _le,
+    trailing_edge as _te, chord_length as _chord_len, normalize as _normalize,
 )
 
 logger = logging.getLogger(__name__)
@@ -85,15 +76,9 @@ class GeometryLoader:
         if not os.path.exists(self.filename):
             raise FileNotFoundError(f"[GeometryLoader] File not found: {self.filename}")
 
-        # Dispatch based on file extension
-        if self.filetype == ".dat":
-            pts = load_dat(self.filename)
-        elif self.filetype in (".stp", ".step"):
-            pts = load_step(self.filename, samples_per_curve=200)
-        elif self.filetype in (".igs", ".iges"):
-            pts = load_iges(self.filename, samples_per_curve=200)
-        else:
-            raise ValueError(f"[GeometryLoader] Unsupported file type: {self.filetype}")
+        # Dispatch loader based on file extension
+        loader_func = get_loader_function(self.filetype)
+        pts = loader_func(self.filename)
 
         # Standardize → numpy float64 array
         pts = np.asarray(pts, dtype=np.float64)
@@ -141,17 +126,6 @@ class GeometryLoader:
             raise ValueError("[GeometryLoader] No geometry loaded. Call `.load()` first.")
         return self.points
 
-    def plot(self, show: bool = True, save_path: Optional[str] = None, ax=None) -> None:
-        """
-        Plot the loaded geometry (lazy import to avoid hard matplotlib dependency).
-        """
-        if self.points is None:
-            raise ValueError("[GeometryLoader] No geometry loaded. Call `.load()` first.")
-        from post.geometry.plot_geo import plot_points
-        os.makedirs(os.path.dirname(save_path) or ".", exist_ok=True)
-        plot_points(self.points, name=self.name, show=show, save_path=save_path, ax=ax)
-        if save_path:
-            logger.info("[GeometryLoader] Plot saved to: %s", save_path)
 
     # --------------------
     # Helpful utilities
