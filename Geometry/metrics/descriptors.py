@@ -8,7 +8,9 @@ Date: 8/24/2025
 
 Purpose:
 --------
-Compute global, chord-normalized airfoil descriptors for meshing/ML.
+Compute global airfoil descriptors for meshing/ML. Transforms point coordinates into
+quantitative shape characteristics. Provides standardized geometric representations
+for automated CFD processing and quality assessment.
 
 Main Tasks:
 -----------
@@ -24,15 +26,9 @@ from __future__ import division
 from typing import Dict
 import numpy as np
 from ._num import (
-    assert_closed_xy,
-    orientation as _orientation,
-    le_te_indices as _le_te_indices,
-    cumulative_arclength,
-    curvature_polyline,
-    split_sides,
-    interp_on_common_x,
-    angle_deg,
-    unit,
+    orientation as _orientation, le_te_indices as _le_te_indices,
+    cumulative_arclength, curvature_polyline, assert_closed_xy,
+    split_sides, interp_on_common_x, angle_deg, unit,
 )
 
 
