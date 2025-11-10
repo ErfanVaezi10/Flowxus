@@ -8,17 +8,21 @@ Date: 8/21/2025
 
 Purpose:
 --------
-Private numerical utilities used by metrics modules.
+Private numerical utilities for geometry metrics. Provides core math operations for curve 
+analysis and geometric computations. Forms the foundation for consistent feature extraction 
+across different airfoil representations.
 
 Main Tasks:
 -----------
-    1. Basic geometry guards (assertions, orientation, LE/TE indices).
-    2. Differential geometry:
-       - Cumulative arclength,
-       - Unit tangents,
-       - Curvature estimation with smoothing.
-    3. Side segmentation and interpolation (pressure/suction split, common-x grid).
-    4. Small vector helpers (angle, normalization).
+    1. Basic geometry validation (closed polyline checks, orientation, LE/TE indices)
+    2. Differential geometry operations:
+       - Cumulative arclength calculation
+       - Unit tangent vector computation
+       - Curvature estimation with smoothing
+    3. Geometry segmentation and interpolation:
+       - Pressure/suction side splitting
+       - Common x-grid interpolation
+    4. Vector mathematics helpers (angle calculation, normalization)
 """
 
 from __future__ import division
@@ -28,8 +32,8 @@ import numpy as np
 from ..topology.indices import le_te_indices as _le_te_topo
 from ..topology.split import split_sides as _split_sides_topo
 
-# ---------- guards / basics ----------
 
+# ---------- guards / basics ----------
 def assert_closed_xy(pts: np.ndarray) -> None:
     """
     Validate that `pts` is a closed 2D polyline.
@@ -92,7 +96,6 @@ def le_te_indices(pts: np.ndarray) -> Tuple[int, int]:
 
 
 # ---------- differential geometry ----------
-
 def _central_tangent(pts: np.ndarray) -> np.ndarray:
     """
     Compute unit tangents per vertex on the closed ring (excluding duplicate last point).
@@ -187,7 +190,6 @@ def interp_on_common_x(upper: np.ndarray, lower: np.ndarray, n: int = 400):
 
 
 # ---------- tiny helpers ----------
-
 def angle_deg(v: np.ndarray) -> float:
     """
     Return the angle of vector `v` in degrees (atan2(y, x)).
