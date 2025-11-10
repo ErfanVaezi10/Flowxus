@@ -64,8 +64,8 @@ def _split_le_te_paths(points_closed: np.ndarray,
     if not (0 <= le_idx < N and 0 <= te_idx < N):
         raise ValueError("LE/TE indices out of range for the given loop.")
     # FIX (optional): guard very short paths (adjacent indices); keep disabled if acceptable.
-    # if (le_idx - te_idx) % N in (1, N-1):
-    #     raise ValueError("LE and TE are adjacent; paths are degenerate.")
+    if (le_idx - te_idx) % N in (1, N-1):
+        raise ValueError("LE and TE are adjacent; paths are degenerate.")
 
     if le_idx < te_idx:
         path1 = P[le_idx:te_idx + 1]
@@ -216,6 +216,6 @@ def split_sides(points_closed: np.ndarray,
         r_su, r_pr = rB, rA
 
     # FIX (optional): sanity assert non-empty paths and inclusive ranges.
-    # if suction.shape[0] < 2 or pressure.shape[0] < 2:
-    #     raise ValueError("Degenerate path produced; check LE/TE indices.")
+    if suction.shape[0] < 2 or pressure.shape[0] < 2:
+        raise ValueError("Degenerate path produced; check LE/TE indices.")
     return pressure, suction, _range_to_1based(r_pr), _range_to_1based(r_su)
