@@ -6,6 +6,10 @@ Project: Flowxus
 Author: Erfan Vaezi
 Date: 8/21/2025
 
+Metrics Subfolder:
+------------------
+Quantitative analysis and feature extraction for airfoil geometries.
+
 Modules:
 --------
 - descriptors: Compute global, chord-normalized airfoil descriptors
