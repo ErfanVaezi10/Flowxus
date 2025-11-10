@@ -6,14 +6,14 @@ Project: Flowxus
 Author: Erfan Vaezi
 Date: 7/15/2025 (Updated: 10/10/2025)
 
-Purpose
--------
+Purpose:
+--------
 Geometric analysis utilities for 2D closed polylines. Provide numerically stable,
 lightly smoothed estimates of signed curvature along a closed curve and shortest
 along-loop distances relative to a reference vertex.
 
-Main Tasks
-----------
+Main Tasks:
+-----------
     1. Compute signed curvature κ(s) on a CLOSED ring using dt/ds with central
        tangents and a small moving-average smoother.
     2. Compute minimal along-curve distances from a reference index to all other
