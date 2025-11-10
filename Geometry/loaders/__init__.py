@@ -4,7 +4,7 @@
 """
 Project: Flowxus
 Author: Erfan Vaezi
-Date: 6/14/2025 (Updated: 7/22/2025)
+Date: 6/14/2025 (Updated: 11/10/2025)
 
 Loaders Subpackage:
 -------------------
@@ -17,6 +17,8 @@ Modules:
 - iges_loader: Loader for IGES geometry via Gmsh OCC interface.
 
 - step_loader: Loader for STEP geometry via Gmsh OCC interface.
+
+- _helpers: Shared utility functions for CAD loaders (entity deduplication and curve evaluation).
 
 Assumptions & Notes:
 --------------------
