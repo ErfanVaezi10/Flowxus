@@ -24,24 +24,11 @@ Notes:
      rotated loops, they should align before computing indices to avoid ambiguous paths.
 """
 
+
 from __future__ import division
 from typing import Tuple, List
 import numpy as np
-
-
-def _assert_xy(points: np.ndarray) -> None:
-    if points is None or points.ndim != 2 or points.shape[1] != 2:
-        raise ValueError("Expected (N,2) float array for points.")
-
-    # FIX (optional): uncomment to catch CAD glitches early.
-    if not np.isfinite(points).all():
-        raise ValueError("Non-finite coordinates (NaN/Inf) detected.")
-
-
-def _require_closed(points: np.ndarray, tol: float = 1e-12) -> None:
-    # rtol=0 => scale-independent closure check
-    if points.shape[0] < 2 or not np.allclose(points[0], points[-1], atol=tol, rtol=0.0):
-        raise ValueError("Expected a CLOSED polyline (first==last within tolerance).")
+from ._validation import _assert_xy, _require_closed
 
 
 def _split_le_te_paths(points_closed: np.ndarray,
@@ -117,7 +104,7 @@ def split_by_le_te(points_closed: np.ndarray,
       - rangeA, rangeB: 0-based inclusive index ranges on the CLOSED array;
         if start > end the range wraps around the end of the array.
     """
-    _assert_xy(points_closed)
+    _assert_xy(points_closed, check_finite=True)
     _require_closed(points_closed, tol=tol)
     return _split_le_te_paths(points_closed, le_idx, te_idx)
 
@@ -146,7 +133,7 @@ def label_suction_pressure(points_closed: np.ndarray,
     - Tie handling: if mean-y values are numerically equal, we default to labeling B as suction;
       see the FIX below for a deterministic tie-break using tol.
     """
-    _assert_xy(points_closed)
+    _assert_xy(points_closed, check_finite=True)
     _require_closed(points_closed, tol=tol)
     if mode != "mean-y":
         raise ValueError("Unsupported mode '{}'; only 'mean-y' is available.".format(mode))
@@ -200,7 +187,7 @@ def split_sides(points_closed: np.ndarray,
     -------
     (pressure, suction, pressure_range_1b, suction_range_1b)
     """
-    _assert_xy(points_closed)
+    _assert_xy(points_closed, check_finite=True)  # NEW: Enable finite checking
     _require_closed(points_closed, tol=tol)
 
     A, B, rA, rB = _split_le_te_paths(points_closed, le_idx, te_idx)
