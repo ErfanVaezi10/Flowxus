@@ -76,7 +76,6 @@ def load_dat(filename: str, skip_header_guess: bool = True) -> np.ndarray:
                     if not line:
                         continue
                     # Accept lines that start with a digit, sign, or dot
-                    # (typical of numeric lines like "0.123 0.456" or "-0.1, 0.2")
                     if line[0] in "0123456789-+.":
                         cleaned.append(line)
 
