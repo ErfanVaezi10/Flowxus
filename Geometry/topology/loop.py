@@ -30,7 +30,6 @@ import numpy as np
 # -----------------------
 # Guards & small helpers
 # -----------------------
-
 def _assert_xy(points: Optional[np.ndarray]) -> None:
     """
     Validate that `points` is an (N, 2) float-like array.
@@ -65,7 +64,6 @@ def _is_exactly_closed(points: np.ndarray, tol: float) -> bool:
 # -----------------------
 # Public API
 # -----------------------
-
 def is_closed(points: np.ndarray, tol: float = 1e-9) -> bool:
     """
     Predicate: does the polyline close on itself (first==last within tol)?
@@ -226,7 +224,6 @@ def sort_loop_ccw(points_closed: np.ndarray,
 # -----------------------
 # Optional: utility
 # -----------------------
-
 def close_and_orient(points: np.ndarray,
                      desired: str = "CCW",
                      tol_close: float = 1e-9) -> np.ndarray:
