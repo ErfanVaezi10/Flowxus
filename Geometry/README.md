@@ -77,3 +77,26 @@ write_geo_and_csv(
     emit_metadata=True,
     emit_scalars_csv=True
 )
+
+
+## Dependencies
+
+- **Required**: `numpy`
+- **Optional**: `gmsh` (for CAD file loading)
+- **Development**: `pytest` (for testing)
+
+## Supported File Formats
+
+| Format | Extension | Loader | Notes |
+|--------|-----------|--------|-------|
+| Airfoil Coordinates | `.dat` | `dat_loader` | Handles headers, comments, mixed delimiters |
+| STEP CAD | `.stp`, `.step` | `step_loader` | Requires Gmsh Python API |
+| IGES CAD | `.igs`, `.iges` | `iges_loader` | Requires Gmsh Python API |
+
+
+## Contributing
+
+1. Follow the existing code structure and documentation standards
+2. Add tests for new functionality
+3. Update documentation for API changes
+4. Ensure all validation and error handling is consistent
