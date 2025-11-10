@@ -78,7 +78,8 @@ write_geo_and_csv(
     emit_scalars_csv=True
 )
 
-
+## Section 2: Dependencies
+```markdown
 ## Dependencies
 
 - **Required**: `numpy`
