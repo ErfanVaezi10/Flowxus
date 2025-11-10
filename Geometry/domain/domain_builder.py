@@ -14,6 +14,7 @@ Purpose:
        JSON header, and optional writing of a **sidecar CSV** with per-vertex scalars.
 
 Keyword arguments (opt-in):
+---------------------------
    - emit_metadata: bool = False
    - emit_scalars_csv: bool = False
    - scalars_path: str = "airfoil_scalars.csv"
