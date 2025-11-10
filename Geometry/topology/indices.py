@@ -30,7 +30,9 @@ import numpy as np
 
 
 def _assert_xy(points: np.ndarray) -> None:
-    """Basic shape check; keep local to avoid cross-package coupling."""
+    """
+    Basic shape check; keep local to avoid cross-package coupling.
+    """
     if points is None or points.ndim != 2 or points.shape[1] != 2:
         raise ValueError("Expected (N,2) float array for points.")
     # Optional robustness: enable if upstream can produce NaN/Inf.
