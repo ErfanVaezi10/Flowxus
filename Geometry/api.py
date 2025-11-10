@@ -22,14 +22,12 @@ Notes
 -----
 - This module is a convenience façade; detailed behavior lives in `geo_loader` and
   `domain_builder`. All dimensions in `box_dims` are assumed in *chord units* if you
-  normalized the geometry (recommended).
+  normalized the geometry.
 """
 
 from typing import Dict, Optional
-
-# Internal: needed to implement helpers (not exported in __all__)
-from .geo.geo_loader import GeometryLoader       # load/normalize/plot, get_closed_points
-from .domain.domain_builder import DomainBuilder # builds box + .generate_geo_file(...)
+from .geo.geo_loader import GeometryLoader
+from .domain.domain_builder import DomainBuilder
 
 __all__ = [
     "load_and_normalize",
@@ -37,9 +35,10 @@ __all__ = [
     "write_geo_and_csv",
 ]
 
-# --------
+
+# -------------
 # Helpers
-# --------
+# -------------
 def load_and_normalize(
     filename: str,
     *,
