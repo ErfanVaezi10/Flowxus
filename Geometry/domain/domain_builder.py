@@ -1,19 +1,19 @@
 # -*- coding: utf-8 -*-
-# Flowxus/geometry/domain/domain_builder.py 
+# Flowxus/geometry/domain/domain_builder.py
 
 """
 Project: Flowxus
 Author: Erfan Vaezi
 Date: 7/12/2025 (Updated: 10/10/2025)
 
-Purpose
--------
+Purpose:
+--------
     1. Build a rectangular far-field domain around an airfoil, aligned with global axes and
        referenced to the airfoil LE. Geometry-only; no meshing fields are defined here.
     2. Optional emission of **metadata** (airfoil descriptors) into the `.geo` as a commented
        JSON header, and optional writing of a **sidecar CSV** with per-vertex scalars.
 
-New keyword arguments (opt-in):
+Keyword arguments (opt-in):
    - emit_metadata: bool = False
    - emit_scalars_csv: bool = False
    - scalars_path: str = "airfoil_scalars.csv"
@@ -27,17 +27,13 @@ from datetime import datetime
 from typing import Dict, Optional, List, cast
 from ..geo.geo_writer import emit_geometry_only_geo
 from .domain_math import (
-    validate_box_dims,
-    leading_edge_from_points,
-    compute_box_bounds,
-    default_physical_tags,
+    validate_box_dims, leading_edge_from_points,
+    compute_box_bounds, default_physical_tags
 )
 
 from geometry.metrics import (
-    compute_descriptors,
-    compute_per_vertex_scalars,
-    dumps_metadata_json,
-    write_scalars_csv,
+    compute_descriptors, compute_per_vertex_scalars,
+    dumps_metadata_json, write_scalars_csv,
 )
 
 logger = logging.getLogger(__name__)
