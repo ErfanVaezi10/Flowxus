@@ -8,7 +8,9 @@ Date: 8/22/2025
 
 Purpose:
 --------
-Compute per-vertex scalars for ML-driven meshing and provide CSV export.
+Compute per-vertex scalars for ML-driven meshing and CSV export. Generates fine-grained
+geometric attributes to support adaptive meshing strategies. Captures local geometric
+behavior essential for optimal mesh density predictions.
 
 Main Tasks:
 -----------
@@ -29,11 +31,7 @@ from __future__ import division
 from typing import Dict, List
 import csv
 import numpy as np
-from ._num import (
-    assert_closed_xy,
-    cumulative_arclength,
-    curvature_polyline,
-)
+from ._num import assert_closed_xy, cumulative_arclength, curvature_polyline
 
 
 def compute_per_vertex_scalars(
