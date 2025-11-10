@@ -6,14 +6,14 @@ Project: Flowxus
 Author: Erfan Vaezi
 Date: 7/15/2025 (Updated: 10/10/2025)
 
-Purpose
--------
-Foundational 2D polyline utilities for airfoil/curve preprocessing. Provide robust
+Purpose:
+--------
+Foundational 2-D polyline utilities for airfoil/curve preprocessing. Provide robust
 checks for input shape, deduplicate consecutive points, locate LE/TE, compute chord,
 normalize geometry to a standard frame, and compute cumulative arclength.
 
-Main Tasks
-----------
+Main Tasks:
+-----------
     1. Validate inputs as (N,2) arrays and sanitize with consecutive-duplicate removal.
     2. Extract leading/trailing edges, compute chord length, and normalize geometry.
     3. Provide cumulative arclength for open/closed polylines (S[0]=0, S[-1]=L).
