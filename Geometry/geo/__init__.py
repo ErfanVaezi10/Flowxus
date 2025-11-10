@@ -6,8 +6,8 @@ Project: Flowxus
 Author: Erfan Vaezi
 Date: 7/18/2025 (Updated: 8/22/2025)
 
-Geo Subpackage
---------------
+Geo Subpackage:
+---------------
 Core geometry handling for airfoil loading and Gmsh file generation.
 
 Modules:
