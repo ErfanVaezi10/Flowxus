@@ -6,11 +6,11 @@ Project: Flowxus
 Author: Erfan Vaezi
 Date: 8/29/2025
 
-Purpose
+Purpose:
 -------
 Lightweight validation utilities for generated meshes.
 
-Main Tasks
+Main Tasks:
 ----------
    - check_physical_groups: verify that required Physical group names exist in
      the mesh file (works when `meshio` is installed; otherwise no-ops cleanly).
@@ -24,6 +24,7 @@ Notes:
 
 import os
 from typing import List, Dict, Optional
+
 
 def check_physical_groups(
     msh_path: str,
