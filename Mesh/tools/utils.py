@@ -6,14 +6,14 @@ Project: Flowxus
 Author: Erfan Vaezi
 Date: 8/25/2025
 
-Purpose
--------
+Purpose:
+--------
 Utility helpers for the meshing pipeline:
     1. Boundary-layer thickness computation for a geometric progression.
     2. Executable lookup with clear error messages and env-var override.
 
-Main Tasks
-----------
+Main Tasks:
+-----------
     - bl_thickness: compute total thickness from (first_layer, n_layers, growth_rate).
     - ensure_exec_on_path: find a binary via <NAME>_BIN or system PATH.
 
@@ -26,6 +26,7 @@ Notes:
 
 import os
 import shutil
+
 
 def bl_thickness(first_layer, n_layers, growth_rate):
     """
