@@ -6,9 +6,9 @@ Project: Flowxus
 Author: Erfan Vaezi
 Date: 11/28/2025
 
-Processor Module:
------------------
-Domain processing and validation logic extracted from writer.py. Handles input 
+Purpose:
+--------
+Domain processing and validation logic extracted from writer.py. Handles input
 validation, geometry processing, and data preparation for mesh assembly.
 
 Main Tasks:
