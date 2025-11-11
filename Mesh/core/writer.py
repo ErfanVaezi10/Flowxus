@@ -4,64 +4,48 @@
 """
 Project: Flowxus
 Author: Erfan Vaezi
-Date: 8/29/2025
+Date: 8/28/2025 (Updated: 11/11/2025)
 
-Purpose
--------
-Emit a complete Gmsh `.geo` script for 2D airfoil cases by combining:
-   1. pure geometry from the geometry package (airfoil + farfield box with physical groups)
-   2. mesh sizing fields (near-wall taper, per-edge thresholds, optional BoundaryLayer extrusion).
+Purpose:
+--------
+Thin orchestrator that coordinates domain processing and GEO assembly.
+Maintains the original API while delegating to specialized modules.
 
-Main Tasks
-----------
-    1. Build the geometry-only section via `emit_geometry_only_geo`:
-        - Spline(1) closed on the same point id
-        - Farfield rectangle (lines 1001..1004)
-        - Plane Surface(100) = {100, 1} (box minus airfoil hole)
-        - Physical groups: inlet/outlet/top/bottom/airfoil/fluid
-
-    2. Append sizing fields via `emit_sizing_fields`:
-        - Threshold taper from the airfoil curve using chord-scaled distances
-        - Optional per-vertex MeshSize pins on airfoil points
-        - Optional BoundaryLayer (Field[3]) with Quads=1 and optional FanNodesList
-        - Per-edge threshold fields for box edges
-        - Background Field as Min of the scalar metrics (BL runs independently)
-
-    3. Emit minimal Gmsh meshing controls just before `Mesh 2;`:
-        - Triangular surface algorithm (e.g., 6 = Frontal-Delaunay)
-        - No global recombination (quads remain local to BL if enabled)
+Main Tasks:
+-----------
+    1. Provide backward-compatible API for existing code
+    2. Orchestrate the processing → assembly pipeline
+    3. Handle file I/O operations for .geo files
+    4. Maintain identical function signatures as original
 
 Notes:
 ------
-    - The module does not call Gmsh itself; it only returns the text of a `.geo` that downstream
-      code (runner) can pass to the Gmsh CLI.
-    - The BoundaryLayer is emitted only when requested and when `n_layers > 0`.
-    - The global surface meshing method is set to a triangular algorithm when BL is on, so you get
-      **quad layers near the airfoil and triangles elsewhere**.
+- This module serves as a thin wrapper around processor and assembler
+- All external APIs are preserved for zero breaking changes
+- Internal implementation uses the new modular architecture
 """
 
-
-import io, os, csv
+import os
 from typing import Dict, Optional, Sequence, Callable
-from geometry.geo.geo_writer import emit_geometry_only_geo
-from .fields import emit_sizing_fields
+from .processor import process_domain
+from .assembler import assemble_geo_script
 
 
 def gmsh_geo_from_domain(
-    domain,
-    inflation_settings: Dict[str, float],
-    mesh_size_settings: Dict[str, float],
-    thickness: Optional[float] = None,
-    *,
-    distance_points_per_curve: int = 200,
-    dist_min: float = 0.05,
-    dist_max: float = 5.0,
-    edge_dist_min: float = 0.0,
-    edge_dist_max: float = 0.02,
-    hybrid_bl: bool = True,
-    airfoil_point_sizes: Optional[Sequence[float]] = None,
-    scalars_csv_path: Optional[str] = None,
-    size_map: Optional[Callable[[Dict[str, str]], float]] = None,
+        domain,
+        inflation_settings: Dict[str, float],
+        mesh_size_settings: Dict[str, float],
+        thickness: Optional[float] = None,
+        *,
+        distance_points_per_curve: int = 200,
+        dist_min: float = 0.05,
+        dist_max: float = 5.0,
+        edge_dist_min: float = 0.0,
+        edge_dist_max: float = 0.02,
+        hybrid_bl: bool = True,
+        airfoil_point_sizes: Optional[Sequence[float]] = None,
+        scalars_csv_path: Optional[str] = None,
+        size_map: Optional[Callable[[Dict[str, str]], float]] = None,
 ) -> str:
     """
     Construct the full `.geo` text (geometry + fields + meshing controls).
@@ -124,113 +108,33 @@ def gmsh_geo_from_domain(
     ValueError
         If the domain lacks airfoil geometry, or distance parameters are invalid,
         or point size arrays have inconsistent lengths.
+
+    Notes
+    -----
+    This function maintains backward compatibility with the original implementation
+    while internally using the new modular architecture.
     """
-    # --- Basic validation of inputs and distances ---
-    if getattr(domain, "airfoil", None) is None or getattr(domain.airfoil, "points", None) is None:
-        raise ValueError("Domain has no loaded airfoil geometry. Call geo.load() before building the domain.")
-    if dist_min <= 0.0 or dist_max <= 0.0 or dist_min >= dist_max:
-        raise ValueError("dist_min/dist_max must be > 0 and dist_min < dist_max.")
-    if edge_dist_max <= edge_dist_min:
-        raise ValueError("edge_dist_max must be > edge_dist_min.")
-
-    # --- Closed airfoil polyline (Nx2); prefer get_closed_points() when available ---
-    if getattr(domain.airfoil, "get_closed_points", None) is not None:
-        airfoil_pts_closed = domain.airfoil.get_closed_points()
-    else:
-        airfoil_pts_closed = domain.airfoil.points
-    N = airfoil_pts_closed.shape[0]
-
-    bbox = domain.bounding_box
-    physical_tags = domain.physical_tags
-
-    # --- Chord scaling for chord-based distances (robust to missing chord_length) ---
-    try:
-        chord = float(domain.airfoil.chord_length())
-    except Exception:
-        chord = float(max(1e-12, bbox["xmax"] - bbox["xmin"]))
-    chord_scale = chord if chord > 0.0 else 1.0
-
-    # --- Optional per-vertex airfoil point sizes: ensure a closed list if provided ---
-    point_sizes = airfoil_point_sizes
-    if point_sizes is not None:
-        if len(point_sizes) == N - 1:
-            point_sizes = list(point_sizes) + [point_sizes[0]]
-        elif len(point_sizes) != N:
-            raise ValueError(
-                f"airfoil_point_sizes must have length {N} (closed) or {N-1} (open), got {len(point_sizes)}"
-            )
-
-    # --- Optionally derive per-vertex sizes from a CSV via size_map ---
-    if point_sizes is None and scalars_csv_path and size_map:
-        sizes = []
-        try:
-            with open(scalars_csv_path, "r", encoding="utf-8") as f:
-                reader = csv.DictReader(f)
-                for row in reader:
-                    val = size_map(row)
-                    if val is not None:
-                        sizes.append(float(val))
-        except Exception:
-            sizes = []
-        if sizes and len(sizes) in (N, N - 1):
-            if len(sizes) == N - 1:
-                sizes.append(sizes[0])
-            point_sizes = sizes
-
-    # --- Geometry section (airfoil + box + physicals; no mesh fields here) ---
-    geo_txt = emit_geometry_only_geo(
-        airfoil_points_closed=airfoil_pts_closed,
-        bbox=bbox,
-        physical_tags=physical_tags,
-    )
-
-    # Enable BL only if requested AND there are layers
-    nlayers = int(inflation_settings.get("n_layers", 0))
-    hybrid_bl_eff = bool(hybrid_bl and nlayers > 0)
-
-    # --- Fields section (BoundaryLayer is NOT part of Background Min list) ---
-    fields_txt = emit_sizing_fields(
+    # Process domain data (validation and preparation)
+    processed_data = process_domain(
+        domain=domain,
         inflation_settings=inflation_settings,
         mesh_size_settings=mesh_size_settings,
-        chord_scale=chord_scale,
         thickness=thickness,
         distance_points_per_curve=distance_points_per_curve,
         dist_min=dist_min,
         dist_max=dist_max,
         edge_dist_min=edge_dist_min,
         edge_dist_max=edge_dist_max,
-        hybrid_bl=hybrid_bl_eff,
-        airfoil_curve_id=1,              # Spline id from geo_writer
-        airfoil_point_sizes=point_sizes,
-        fan_node_ids=[1],                # assume Point(1) is TE; adjust if needed
+        hybrid_bl=hybrid_bl,
+        airfoil_point_sizes=airfoil_point_sizes,
+        scalars_csv_path=scalars_csv_path,
+        size_map=size_map,
     )
 
-    # --- Assemble final .geo ---
-    buf = io.StringIO(); W = buf.write
-    W("// ===== AUTO-GENERATED BY mesh.gmsh.writer =====\n\n")
+    # Assemble GEO script from processed data
+    geo_script = assemble_geo_script(processed_data)
 
-    # 1) Geometry first
-    W(geo_txt); W("\n")
-
-    # 2) Then fields
-    W(fields_txt); W("\n")
-
-    # 3) Right before meshing, enforce triangle-friendly global options.
-    #    The BL field will still create quads locally along the airfoil.
-    if hybrid_bl_eff:
-        # Use a TRIANGULAR surface algorithm; BL will still create quads locally
-        # 6 = Frontal-Delaunay (triangles), 5 = Delaunay (triangles)
-        W("Mesh.Algorithm = 6;\n")
-        W("Mesh.RecombineAll = 0;\n")  # do NOT globally recombine
-        # (Intentionally no 'Recombine Surface {100};' here)
-        W("Mesh.Optimize = 1;\n")
-        W("Mesh.CharacteristicLengthExtendFromBoundary = 0;\n")
-        W("\n")
-
-    # 4) Generate 2D mesh
-    W("Mesh 2;\n")
-
-    return buf.getvalue()
+    return geo_script
 
 
 def write_geo_file(geo_text: str, path: str) -> str:
