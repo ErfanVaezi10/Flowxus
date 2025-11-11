@@ -13,19 +13,19 @@ Gmsh-specific assembly, and mesh generation orchestration.
 
 Modules:
 --------
-- base: Abstract interfaces for mesh generators and processors
-- processor: Domain processing, validation, and data preparation
-- assembler: Gmsh-specific GEO script assembly from processed data
-- writer: High-level orchestrator maintaining backward-compatible API
-- fields: Modular field definitions for mesh sizing control
-- generators: Mesh generator implementations (Gmsh and future custom)
-- runner: Mesh execution orchestration
+- base:       Abstract interfaces for mesh generators and processors
 
-Notes:
-------
-- Maintains full backward compatibility with existing APIs
-- New modular architecture enables future custom mesh generators
-- All external function signatures remain unchanged
+- processor:  Domain processing, validation, and data preparation
+
+- assembler:  Gmsh-specific GEO script assembly from processed data
+
+- writer:     High-level orchestrator maintaining backward-compatible API
+
+- fields:     Modular field definitions for mesh sizing control
+
+- generators: Mesh generator implementations (Gmsh and future custom)
+
+- runner:     Mesh execution orchestration
 """
 
 from .writer import gmsh_geo_from_domain, write_geo_file
