@@ -6,10 +6,10 @@ Project: Flowxus
 Author: Erfan Vaezi
 Date: 11/28/2025
 
-Assembler Module:
------------------
-Gmsh-specific assembly logic extracted from writer.py. Handles the combination 
-of geometry, fields, and meshing controls into complete .geo scripts.
+Purpose:
+--------
+Gmsh-specific assembly logic extracted from writer.py. Handles the combination of
+geometry, fields, and meshing controls into complete .geo scripts.
 
 Main Tasks:
 -----------
