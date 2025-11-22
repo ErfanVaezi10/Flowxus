@@ -14,6 +14,7 @@ MeshGenerator abstract interface.
 Modules:
 --------
 - gmsh_generator:   Gmsh-based mesh generation (current production implementation)
+
 - custom_generator: Placeholder for future custom mesh generation algorithm
 
 Notes:
