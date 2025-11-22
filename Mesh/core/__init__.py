@@ -40,13 +40,16 @@ __all__ = [
     "gmsh_geo_from_domain",
     "write_geo_file",
     "mesh_geo",
+
     # Modular components
     "process_domain",
     "assemble_geo_script",
+
     # Abstract interfaces
     "MeshGenerator",
     "GeometryProcessor",
     "MeshAssembler",
+    
     # Generator implementations
     "GmshGenerator",
     "default_gmsh_generator",
